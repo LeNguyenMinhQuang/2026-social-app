@@ -5,3 +5,7 @@ build/
 .env.local
 *.log
 .DS_Store
+
+# TypeScript build cache
+*.tsbuildinfo
+node_modules/.tmp/

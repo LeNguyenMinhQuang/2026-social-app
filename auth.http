@@ -1,0 +1,73 @@
+### Biến dùng chung
+@baseUrl = http://localhost:5000/api/auth
+@contentType = application/json
+
+### 1. Health check (không thuộc auth nhưng test nhanh server sống)
+GET http://localhost:5000/health
+
+### 2. Register - Đăng ký user mới
+# @name register
+POST {{baseUrl}}/register
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser01",
+  "email": "testuser01@example.com",
+  "password": "Password123"
+}
+
+### 3. Register - Test trùng email (phải trả lỗi 400)
+POST {{baseUrl}}/register
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser02",
+  "email": "testuser01@example.com",
+  "password": "Password123"
+}
+
+### 4. Login - Đăng nhập đúng
+# @name login
+POST {{baseUrl}}/login
+Content-Type: {{contentType}}
+
+{
+  "email": "testuser01@example.com",
+  "password": "Password123"
+}
+
+### 5. Login - Sai password (phải trả lỗi 401)
+POST {{baseUrl}}/login
+Content-Type: {{contentType}}
+
+{
+  "email": "testuser01@example.com",
+  "password": "SaiPassword"
+}
+
+### 6. Lấy accessToken vừa login để dùng cho các request bên dưới
+@accessToken = {{login.response.body.data.accessToken}}
+
+### 7. Test route cần đăng nhập - /me (phải trả userId)
+GET {{baseUrl}}/me
+Authorization: Bearer {{accessToken}}
+
+### 8. Test /me KHÔNG có token (phải trả lỗi 401)
+GET {{baseUrl}}/me
+
+### 9. Test /me với token rác (phải trả lỗi 401 "Token đã hết hạn hoặc không hợp lệ")
+GET {{baseUrl}}/me
+Authorization: Bearer token.gia.mao
+
+### 10. Refresh token (REST Client tự gửi kèm cookie đã lưu từ request login ở trên)
+# @name refresh
+POST {{baseUrl}}/refresh-token
+
+### 11. Dùng accessToken MỚI từ refresh để gọi lại /me
+@newAccessToken = {{refresh.response.body.data.accessToken}}
+
+GET {{baseUrl}}/me
+Authorization: Bearer {{newAccessToken}}
+
+### 12. Logout
+POST {{baseUrl}}/logout

@@ -37,12 +37,16 @@ axiosClient.interceptors.response.use(
       _retry?: boolean;
     };
 
-    if (error.response?.status !== 401 || originalRequest._retry) {
-      return Promise.reject(error);
-    }
+    // Không tự động refresh token nếu request không phải 401, đã retry, hoặc là endpoint auth (login, register, refresh-token)
+    const isAuthEndpoint =
+      originalRequest.url?.includes("/auth/login") ||
+      originalRequest.url?.includes("/auth/register") ||
+      originalRequest.url?.includes("/auth/refresh-token");
 
-    if (originalRequest.url?.includes("/auth/refresh-token")) {
-      useAuthStore.getState().clearAuth();
+    if (error.response?.status !== 401 || originalRequest._retry || isAuthEndpoint) {
+      if (originalRequest.url?.includes("/auth/refresh-token")) {
+        useAuthStore.getState().clearAuth();
+      }
       return Promise.reject(error);
     }
 

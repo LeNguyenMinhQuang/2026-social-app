@@ -5,7 +5,7 @@ dotenv.config();
 
 const envSchema = z.object({
   PORT: z.string().default("5000"),
-  NODE_ENV: z.enum(["development", "production"]).default("development"),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
   REDIS_URL: z.string().min(1, "REDIS_URL is required"),
   ACCESS_TOKEN_SECRET: z.string().min(1),

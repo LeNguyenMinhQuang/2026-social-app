@@ -1,0 +1,25 @@
+{
+  "name": "mini-social-network",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Giai đoạn 0: Setup",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeNguyenMinhQuang/2026-social-app.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/LeNguyenMinhQuang/2026-social-app/issues"
+  },
+  "homepage": "https://github.com/LeNguyenMinhQuang/2026-social-app#readme",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0"
+  }
+}

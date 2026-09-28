@@ -71,3 +71,140 @@ Authorization: Bearer {{newAccessToken}}
 
 ### 12. Logout
 POST {{baseUrl}}/logout
+
+### ============ USER PROFILE ============
+
+### 13. Xem profile theo username (public, không cần token)
+GET http://localhost:5000/api/users/testuser01
+
+### 14. Cập nhật profile (cần đăng nhập)
+PATCH {{baseUrl}}/../users/me
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "bio": "Xin chào, đây là bio thử nghiệm"
+}
+
+### 15. Test đổi username trùng với người khác (phải lỗi 400)
+PATCH {{baseUrl}}/../users/me
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "username": "testuser01"
+}
+
+### 16. Follow 1 user khác (cần tạo sẵn user thứ 2 trước, hoặc dùng chính username của bạn để test case lỗi tự follow)
+POST http://localhost:5000/api/users/testuser01/follow
+Authorization: Bearer {{accessToken}}
+
+### 17. Unfollow
+DELETE http://localhost:5000/api/users/testuser01/follow
+Authorization: Bearer {{accessToken}}
+
+### ============ POST ============
+
+### 18. Tạo bài viết chỉ có text (không ảnh)
+# @name createPost
+POST http://localhost:5000/api/posts
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "content": "Bài viết test đầu tiên, chưa có ảnh"
+}
+
+### 19. Lấy postId vừa tạo để dùng cho các test bên dưới
+@postId = {{createPost.response.body.data.post._id}}
+
+### 20. Like bài viết
+POST http://localhost:5000/api/posts/{{postId}}/like
+Authorization: Bearer {{accessToken}}
+
+### 21. Bấm like lần 2 -> phải chuyển thành unlike (toggle)
+POST http://localhost:5000/api/posts/{{postId}}/like
+Authorization: Bearer {{accessToken}}
+
+### 22. Test tạo bài viết KHÔNG có content lẫn ảnh (phải lỗi 400)
+POST http://localhost:5000/api/posts
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{}
+
+### 23. Xóa bài viết
+DELETE http://localhost:5000/api/posts/{{postId}}
+Authorization: Bearer {{accessToken}}
+
+### 24. Test xóa bài viết của người khác (phải lỗi 400) - cần postId của user khác
+
+### ============ COMMENT & FEED ============
+
+### 25. Tạo comment cho bài viết
+POST http://localhost:5000/api/posts/{{postId}}/comments
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "content": "Comment test đầu tiên"
+}
+
+### 26. Lấy danh sách comment
+GET http://localhost:5000/api/posts/{{postId}}/comments
+
+### 27. Lấy feed (trang đầu, không có cursor)
+GET http://localhost:5000/api/posts/feed
+Authorization: Bearer {{accessToken}}
+
+### 28. Lấy feed trang tiếp theo (thay YOUR_CURSOR bằng giá trị nextCursor từ response #27)
+GET http://localhost:5000/api/posts/feed?cursor=YOUR_CURSOR
+Authorization: Bearer {{accessToken}}
+
+### ============ NOTIFICATION ============
+
+### 29. Login user thứ 2 (người sẽ NHẬN thông báo — đổi email/pass đúng với user bạn đã tạo)
+# @name loginUser2
+POST {{baseUrl}}/login
+Content-Type: {{contentType}}
+
+{
+  "email": "testuser01@example.com",
+  "password": "Password123"
+}
+
+### 30. Follow user 2 bằng token của user 1 (tạo ra 1 thông báo "follow")
+POST http://localhost:5000/api/users/testuser01/follow
+Authorization: Bearer {{accessToken}}
+
+### 31. Lấy danh sách thông báo BẰNG TOKEN CỦA NGƯỜI NHẬN (user 2, không phải người vừa follow)
+GET http://localhost:5000/api/notifications
+Authorization: Bearer {{loginUser2.response.body.data.accessToken}}
+
+### 32. Đếm số thông báo chưa đọc
+GET http://localhost:5000/api/notifications/unread-count
+Authorization: Bearer {{loginUser2.response.body.data.accessToken}}
+
+### 33. Đánh dấu đã đọc hết
+PATCH http://localhost:5000/api/notifications/mark-read
+Authorization: Bearer {{loginUser2.response.body.data.accessToken}}
+
+### ============ CHAT (REST — chưa gồm gửi tin nhắn qua socket) ============
+
+### 34. Bắt đầu/lấy hội thoại với 1 user khác
+# @name startConv
+POST http://localhost:5000/api/conversations/with/testuser01
+Authorization: Bearer {{accessToken}}
+
+### 35. Lấy danh sách hội thoại của mình
+GET http://localhost:5000/api/conversations
+Authorization: Bearer {{accessToken}}
+
+### 36. Lấy lịch sử tin nhắn (rỗng, vì chưa gửi tin nhắn nào — bước sau mới có)
+@convId = {{startConv.response.body.data.conversation._id}}
+GET http://localhost:5000/api/conversations/{{convId}}/messages
+Authorization: Bearer {{accessToken}}
+
+### 37. Test lỗi: nhắn tin cho chính mình (phải lỗi 400)
+POST http://localhost:5000/api/conversations/with/YOUR_OWN_USERNAME
+Authorization: Bearer {{accessToken}}

@@ -113,17 +113,15 @@ describe("POST /api/auth/login", () => {
 describe("GET /api/auth/me (route cần đăng nhập)", () => {
   it("từ chối khi không có token", async () => {
     const res = await request(app).get("/api/auth/me");
-
     expect(res.status).toBe(401);
   });
 
   it("từ chối khi token không hợp lệ", async () => {
     const res = await request(app).get("/api/auth/me").set("Authorization", "Bearer token-rac");
-
     expect(res.status).toBe(401);
   });
 
-  it("cho phép truy cập khi có token hợp lệ", async () => {
+  it("cho phép truy cập và trả đúng thông tin user khi token hợp lệ", async () => {
     const registerRes = await request(app).post("/api/auth/register").send(VALID_USER);
     const accessToken = registerRes.body.data.accessToken;
 
@@ -132,7 +130,7 @@ describe("GET /api/auth/me (route cần đăng nhập)", () => {
       .set("Authorization", `Bearer ${accessToken}`);
 
     expect(res.status).toBe(200);
-    expect(res.body.userId).toBeDefined();
+    expect(res.body.data.user.email).toBe(VALID_USER.email);
   });
 });
 
@@ -144,7 +142,7 @@ describe("POST /api/auth/refresh-token", () => {
     expect(res.body.message).toContain("refresh token");
   });
 
-  it("cấp accessToken mới khi có cookie refreshToken hợp lệ", async () => {
+  it("cấp accessToken + refreshToken MỚI khi cookie hợp lệ", async () => {
     const registerRes = await request(app).post("/api/auth/register").send(VALID_USER);
     const cookies = registerRes.headers["set-cookie"];
 
@@ -156,5 +154,34 @@ describe("POST /api/auth/refresh-token", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data.accessToken).toBeDefined();
+    expect(res.headers["set-cookie"]).toBeDefined();
+  });
+
+  it("phát hiện đánh cắp: tái sử dụng refreshToken cũ sau khi đã rotate -> thu hồi cả family", async () => {
+    const registerRes = await request(app).post("/api/auth/register").send(VALID_USER);
+    const oldCookies = registerRes.headers["set-cookie"] as unknown as string[];
+
+    // Lần refresh đầu tiên bằng cookie gốc — hợp lệ, kích hoạt rotation
+    const firstRefresh = await request(app)
+      .post("/api/auth/refresh-token")
+      .set("Cookie", oldCookies);
+
+    expect(firstRefresh.status).toBe(200);
+
+    // Dùng LẠI cookie CŨ (đã bị thay thế) — mô phỏng kẻ tấn công dùng token đánh cắp
+    const reuseOldCookie = await request(app)
+      .post("/api/auth/refresh-token")
+      .set("Cookie", oldCookies);
+
+    expect(reuseOldCookie.status).toBe(401);
+
+    // Vì family đã bị thu hồi, kể cả cookie MỚI (hợp lệ, thuộc user thật) từ lần rotate đầu
+    // cũng không dùng được nữa — đây chính là hệ quả bảo vệ của theft detection
+    const newCookies = firstRefresh.headers["set-cookie"] as unknown as string[];
+    const useNewCookieAfterRevoke = await request(app)
+      .post("/api/auth/refresh-token")
+      .set("Cookie", newCookies);
+
+    expect(useNewCookieAfterRevoke.status).toBe(401);
   });
 });

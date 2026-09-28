@@ -1,13 +1,10 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
-import {
-  registerFormSchema,
-  type RegisterFormValues,
-} from "../../features/auth/schema/auth.schema";
-import { useRegister } from "../../features/auth/hooks/useAuth";
-import { FormField } from "../common/FormField";
-import { Button } from "../common/Button";
+import { registerFormSchema, type RegisterFormValues } from "../schema/auth.schema";
+import { useRegister } from "../hooks/useAuth";
+import { FormField } from "../../../components/common/FormField";
+import { Button } from "../../../components/common/Button";
 
 export function RegisterForm() {
   const { mutate, isPending } = useRegister();

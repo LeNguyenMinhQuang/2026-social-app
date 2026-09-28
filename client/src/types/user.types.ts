@@ -20,3 +20,25 @@ export interface ApiErrorResponse {
   success: false;
   message: string;
 }
+
+export interface Profile {
+  id: string;
+  username: string;
+  avatar: string;
+  bio: string;
+  followersCount: number;
+  followingCount: number;
+  isFollowing: boolean;
+  isMe: boolean;
+}
+
+export interface UpdateProfileInput {
+  username?: string;
+  bio?: string;
+}
+
+export interface AuthorSummary {
+  _id: string;
+  username: string;
+  avatar: string;
+}

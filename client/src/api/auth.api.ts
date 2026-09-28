@@ -1,5 +1,5 @@
 import { axiosClient } from "./axiosClient";
-import type { ApiResponse, AuthResponse } from "../types/user.types";
+import type { ApiResponse, AuthResponse, User } from "../types/user.types";
 import type { LoginFormValues, RegisterFormValues } from "../features/auth/schema/auth.schema";
 
 export const registerApi = async (input: Omit<RegisterFormValues, "confirmPassword">) => {
@@ -20,4 +20,9 @@ export const refreshTokenApi = async () => {
   const { data } =
     await axiosClient.post<ApiResponse<{ accessToken: string }>>("/auth/refresh-token");
   return data.data;
+};
+
+export const getMeApi = async (): Promise<User> => {
+  const { data } = await axiosClient.get<ApiResponse<{ user: User }>>("/auth/me");
+  return data.data.user;
 };

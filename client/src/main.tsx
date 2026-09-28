@@ -5,12 +5,15 @@ import { RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
 import { queryClient } from "./lib/queryClient";
 import { router } from "./routes/router";
+import { AuthInitializer } from "./components/common/AuthInitializer";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <AuthInitializer>
+        <RouterProvider router={router} />
+      </AuthInitializer>
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   </StrictMode>

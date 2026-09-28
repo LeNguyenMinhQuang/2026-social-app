@@ -1,0 +1,10 @@
+{
+  "client/**/*.{ts,tsx}": [
+    "npm --prefix client run lint:staged --",
+    "npm --prefix client run format:staged --"
+  ],
+  "server/**/*.ts": [
+    "npm --prefix server run lint:staged --",
+    "npm --prefix server run format:staged --"
+  ]
+}

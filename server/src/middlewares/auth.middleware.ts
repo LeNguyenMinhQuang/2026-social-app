@@ -27,3 +27,22 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
     return;
   }
 };
+
+export const optionalAuth = (req: Request, _res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.split(" ")[1];
+
+    if (token) {
+      try {
+        const decoded = verifyAccessToken(token);
+        req.userId = new Types.ObjectId(decoded.userId);
+      } catch {
+        // Token sai/hết hạn -> coi như khách vãng lai, không chặn request
+      }
+    }
+  }
+
+  next();
+};

@@ -1,6 +1,7 @@
 import { useAuthStore } from "../features/auth/store/authStore";
 import { useLogout } from "../features/auth/hooks/useAuth";
 import { Button } from "../components/common/Button";
+import { Link } from "react-router-dom";
 
 export default function HomePage() {
   const user = useAuthStore((state) => state.user);
@@ -10,6 +11,12 @@ export default function HomePage() {
     <div className="flex min-h-screen items-center justify-center bg-mist px-6">
       <div className="max-w-sm text-center">
         <h1 className="font-display text-3xl text-ink">Chào, {user?.username} 👋</h1>
+        <Link
+          to={`/profile/${user?.username}`}
+          className="mt-4 inline-block text-sm text-coral underline"
+        >
+          Xem profile của tôi
+        </Link>
         <p className="mt-2 font-sans text-sm text-ink/50">Feed sẽ được code ở Giai đoạn 3.</p>
         <div className="mt-6">
           <Button onClick={() => logout()} isLoading={isPending}>
